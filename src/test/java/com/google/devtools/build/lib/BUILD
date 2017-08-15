@@ -1360,3 +1360,24 @@ test_suite(
     name = "others",
     tags = ["-" + n for n in TEST_SUITES],
 )
+
+RANGE = range(0, 10000)
+
+[
+    genrule(
+        name = "foo_%s" % i,
+        srcs = [],
+        outs = ["out_%s" % i],
+        cmd = "$(location remote_cache_socket_failure_script.sh) %s > $@" % i,
+        tools = ["remote_cache_socket_failure_script.sh"],
+    )
+    for i in RANGE
+]
+
+
+genrule(
+    name = "remote_cache_socket_failure",
+    srcs = ["foo_%s" % i for i in RANGE],
+    outs = ["everything.out"],
+    cmd = "rm -f $@ && for f in $(SRCS); do cat $$f >> $@; done",
+)
